@@ -1,81 +1,107 @@
-# Docker CI Template
+# Custom Caddy Docker Image
 
-This template will automatically build, release and push docker images for you as soon as a new base image is available.
+A customized Caddy web server Docker image with additional plugins and utilities for dynamic DNS management and OPNsense integration.
 
-Simply place a `Dockerfile` at the root of the repo e.g.:
+## Features
 
-```
-FROM debian:bookworm-20240211
+### Caddy Plugins
+- **caddy-docker-proxy/v2** - Docker container discovery and proxy configuration
+- **caddy-dns/porkbun** - Porkbun DNS provider for ACME DNS challenges
+- **caddy-dynamicdns** - Dynamic DNS updates
+- **caddy-events-exec** - Execute commands on Caddy events
+- **caddy-dynamicdns-cmd-source** - Custom dynamic DNS command source
 
-RUN apt-get update && apt-get install -y \
-    fortune \
-    cowsay \
-    && rm -rf /var/lib/apt/lists/*
-RUN echo '/usr/games/fortune | /usr/games/cowsay && echo -e "\n"' >> /etc/bash.bashrc
-```
+### Additional Tools
+- **curl** - HTTP client for API calls
+- **jq** - JSON processor for API responses
+- **ca-certificates** - SSL certificate bundle
 
-Is important **not** to use a tag like `latest`, `stable` or any other tag that is not regular updated. For debian there are for example images with a date inside the tag.
-
-The workflows will automatically build and release a new debian images with a `cowsay` message of the day under the following name: `{DOCKER_HUB_USERNAME}/{REPO_NAME}:{BASE_IMAGE_TAG}` e.g.: `mietzen/debian-cowsay:bookworm-20240211` (The latest image also gets the `latest` tag)
-
-**Cowsay Example:** [https://github.com/mietzen/debian-cowsay](https://github.com/mietzen/debian-cowsay)
-
-The workflow will build all platform listed in [`platforms.json`](.github/platforms.json) and also push them as a multi-arch image.
+### Custom Scripts
+- **add_host_override** - OPNsense Unbound DNS host override management
+- **export_secrets** - Docker secrets to environment variables converter
 
 ## Usage
 
-Click on `Use this template`:
+### Basic Docker Run
+```bash
+docker run -d \
+  --name caddy-custom \
+  -p 80:80 -p 443:443 \
+  -v caddy_data:/data \
+  -v caddy_config:/config \
+  your-registry/caddy-custom:latest
+```
 
-![](https://github.com/mietzen/docker-ci-template/blob/8cf107cd387f7301ac6625cf324416965b362974/use-template.png?raw=true)
+### Docker Compose with Secrets
+```yaml
+services:
+  caddy:
+    image: your-registry/caddy-custom:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    secrets:
+      - opnsense_api_key
+      - opnsense_api_secret
+      - porkbun_api_key
 
-And follow the preparation steps.
+secrets:
+  opnsense_api_key:
+    external: true
+  opnsense_api_secret:
+    external: true
+  porkbun_api_key:
+    external: true
 
-## Preparation
+volumes:
+  caddy_data:
+  caddy_config:
+```
 
-### Github Token App
+## OPNsense Integration
 
-For the workflow to run you need to create a GitHub-App to generate tokens, follow:
+The `add_host_override` script manages DNS host overrides in OPNsense Unbound DNS resolver.
 
-[https://github.com/actions/create-github-app-token](https://github.com/actions/create-github-app-token?tab=readme-ov-file#usage)
+### Required Environment Variables
+- `OPNSENSE_API_KEY` - OPNsense API key
+- `OPNSENSE_API_SECRET` - OPNsense API secret
+- `OPNSENSE_INSECURE=true` - Optional: Skip SSL verification for self-signed certificates
 
-If you follow the instructions above you should have your App listed under `Settings -> GitHub Apps`:
+### Usage Example
+```bash
+add_host_override opnsense.local.domain example.com 192.168.1.100
+```
 
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/github-app.png?raw=true)
+This creates a DNS override for `example.com` pointing to `192.168.1.100` via the OPNsense API.
 
-### Repository config
+## Dynamic DNS Configuration
 
-You need to activate `auto-merge` under `Settings -> General -> Pull Requests`:
+Example Caddyfile snippet for dynamic DNS with Porkbun:
+```
+example.com {
+    tls {
+        dns porkbun {env.PORKBUN_API_KEY} {env.PORKBUN_SECRET_API_KEY}
+    }
+    
+    dynamic_dns {
+        domains {
+            example.com subdomain.example.com
+        }
+        resolver 1.1.1.1
+        interval 300s
+        cmd_source /usr/sbin/add_host_override opnsense.example.com {domain} {ip}
+    }
+    
+    reverse_proxy backend:8080
+}
+```
 
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/auto-merge.png?raw=true)
+## Secrets Management
 
-and setup the branch protection for `main` under `Settings -> Branch -> Add branch protection rule`, for `Branch name pattern` type in `main`:
-
-Then apply the following settings:
-
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/branch-protection.png?raw=true)
-
-**The status check `Check-Build` is only available after the `docker-image.yml` ran at least one time. You can trigger the workflow by simply opening a Pull-Request e.g. to add your `Dockerfile`.**
-
-#### Secrets
-
-You need to add the following secrets as repository secrets in Actions:
-
-- `APP_ID`
-- `APP_PRIVATE_KEY`
-- `DOCKER_HUB_DEPLOY_KEY`
-
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/action-secrets.png?raw=true)
-
-**and** to Dependabot:
-
-- `APP_ID`
-- `APP_PRIVATE_KEY`
-
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/dependabot-secrets.png?raw=true)
-
-[Optional] Add your DockerHub username and/or the docker image name under variables:
-
-- `DOCKER_HUB_USERNAME`
-- `IMAGE_NAME`
-
-![](https://github.com/mietzen/docker-ci-template/blob/313cb3c73a4ce2a43397a3a749bfcc238c967367/actions-vars.png?raw=true)
+The container automatically exports Docker secrets from `/run/secrets/` as uppercase environment variables at startup. For example:
+- `/run/secrets/opnsense_api_key` → `OPNSENSE_API_KEY`
+- `/run/secrets/porkbun_secret` → `PORKBUN_SECRET`

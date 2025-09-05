@@ -21,7 +21,7 @@ jobs:
       id: set-matrix
       run: |
         echo "build_matrix=$(cat .github/platforms.json)" >> $GITHUB_OUTPUT
-        echo "version=$(grep FROM ./Dockerfile | head -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)" >> $GITHUB_OUTPUT
+        echo "version=$(grep FROM ./Dockerfile | tail -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)" >> $GITHUB_OUTPUT
         echo "repo_name_lower_case=$(echo ${GITHUB_REPOSITORY@L} | cut -d'/' -f2)" >> $GITHUB_OUTPUT
 
   Build:
