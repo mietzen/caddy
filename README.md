@@ -2,7 +2,7 @@
 
 My customized Caddy Docker image with additional plugins for Docker service discovery, OPNsense local DNS management and Porkbun ACME integration.
 
-...asciinema demo...
+![Demo of the Plugin](demo60fps.gif)
 
 ## Caddy Plugins
 
@@ -171,7 +171,6 @@ The default `Caddyfile` sits in `/caddy/Caddyfile` and contains:
         api_key {file./run/secrets/porkbun_api_key}
         api_secret_key {file./run/secrets/porkbun_api_secret_key}
     }
-    debug
     storage file_system {
         root /caddy/data
     }
