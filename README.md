@@ -22,15 +22,19 @@ My customized Caddy Docker image with additional plugins for Docker service disc
 
   	- Set the Permissions for Dnsmasq to: `Services: Dnsmasq DNS/DHCP: Settings`
 
-   	  <img width="600" alt="OPNsense user permissions setting for Dnsmasq" src="https://github.com/user-attachments/assets/902d0c5e-d6fa-4254-ad56-2bc4e76b3582" />
+   	  <img width="500" alt="OPNsense user permissions setting for Dnsmasq" src="https://github.com/user-attachments/assets/902d0c5e-d6fa-4254-ad56-2bc4e76b3582" />
 
   	- Set the Permissions for Unbound to: `Services: Unbound (MVC)` & `Services: Unbound DNS: Edit Host and Domain Override`
 
-      <img width="600" alt="OPNsense user permissions setting for Unbound" src="https://github.com/user-attachments/assets/a24c95e2-c857-4edb-9c21-d54417ed7799"/>
+      <img width="500" alt="OPNsense user permissions setting for Unbound" src="https://github.com/user-attachments/assets/a24c95e2-c857-4edb-9c21-d54417ed7799"/>
 
 	- Click `Save`
 
 2. Click the API-Key Symbol (Postage Stamp?) to create a API Key and click yes.
+
+    <img width="600" alt="Screenshot of the button 'Create' that create a API-Key and looks some what like a Postage Stamp" src="https://github.com/user-attachments/assets/90ae8565-729b-451f-9a78-f61a18a6b05a" />
+
+3. Open the downloaded file and copy the API key and secret
 
 ## Example
 
