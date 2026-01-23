@@ -29,8 +29,34 @@ My customized Caddy Docker image with additional plugins for Docker service disc
       <img width="600" alt="OPNsense user permissions setting for Unbound" src="https://github.com/user-attachments/assets/a24c95e2-c857-4edb-9c21-d54417ed7799"/>
 
 	- Click `Save`
+
 2. Click the API-Key Symbol (Postage Stamp?) to create a API Key and click yes.
+
 ## Example
+
+Create the `secrets` folder and populate it:
+
+```bash
+mkdir ./secrets
+touch ./secrets/opnsense_api_key \
+      ./secrets/opnsense_api_secret_key \
+      ./secrets/porkbun_api_key \
+      ./secrets/porkbun_api_secret_key
+chmod 700 ./secrets
+chmod 600 ./secrets/*
+# chown -R root:root ./secrets
+```
+
+and add you api key / secrets. After testing you might want to set `root` as owner and run all `docker` commands with `sudo`. Or use:
+
+```yaml
+secrets:
+  opnsense_api_key:
+    environment: OPNSENSE_API_KEY
+  ...
+```
+
+To inject the secrets from the environment and delete the secrets folder with `rm -rf ./secrets`.
 
 Now we can create a docker compose file like this:
 
