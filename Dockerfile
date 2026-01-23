@@ -1,24 +1,20 @@
-FROM caddy:2-builder-alpine AS builder
+FROM caddy:2-builder AS builder
 
 RUN xcaddy build \
-    --with github.com/lucaslorentz/caddy-docker-proxy/v2 \
     --with github.com/caddy-dns/porkbun \
+    --with github.com/lucaslorentz/caddy-docker-proxy/v2 \
     --with github.com/mholt/caddy-dynamicdns \
-    --with github.com/mholt/caddy-events-exec \
-    --with github.com/mietzen/caddy-dynamicdns-cmd-source
+    --with github.com/mietzen/caddy-dns-opnsense \
+    --with github.com/mietzen/libdns-opnsense-dnsmasq \
+    --with github.com/mietzen/libdns-opnsense-unbound
 
-FROM caddy:2.10.2-alpine
+FROM caddy:2.10.2
 
-RUN apk add --no-cache curl ca-certificates jq
-
-COPY ./add_host_override /usr/sbin/add_host_override
-COPY ./export_secrets /usr/sbin/export_secrets
-
-RUN chmod +x /usr/sbin/add_host_override
-RUN chmod +x /usr/sbin/export_secrets
-
+RUN mkdir /caddy
+COPY ./Caddyfile /caddy/Caddyfile
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
-ENTRYPOINT ["/usr/sbin/export_secrets"]
+ENTRYPOINT ["caddy", "docker-proxy", "--caddyfile-path", "/caddy/Caddyfile"]
 
-CMD ["caddy", "docker-proxy"]
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl --fail http://localhost:2019/metrics || exit 1

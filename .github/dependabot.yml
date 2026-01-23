@@ -13,3 +13,7 @@ updates:
       time: "08:00"
       day: "saturday"
       timezone: "Europe/Berlin"
+  - package-ecosystem: "gomod"
+    directory: "/.github/dependabot-hack"
+    schedule:
+      interval: "weekly"
