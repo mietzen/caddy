@@ -1,39 +1,28 @@
 {
 	dynamic_dns {
 		provider opnsense {
-			host {env.OPNSENSE_HOSTNAME}
+			host {$OPNSENSE_HOSTNAME}
 			api_key {file./run/secrets/opnsense_api_key}
 			api_secret_key {file./run/secrets/opnsense_api_secret_key}
-			dns_service {env.OPNSENSE_DNS_SERVICE}
-			insecure {env.OPNSENSE_INSECURE}
+			dns_service {$OPNSENSE_DNS_SERVICE}
+			insecure {$OPNSENSE_INSECURE}
 		}
-		domains {env.BASE_DOMAIN}
+		domains {
+			{$BASE_DOMAIN}
+		}
 		dynamic_domains
-		ip_source static {env.DOCKER_HOST_IP}
-		check_interval 5m
+		ip_source static {$DOCKER_HOST_IP}
+		check_interval 120m
 		ttl 1h
+		versions ipv4
 	}
-	email {env.ACME_EMAIL}
+	email {$ACME_EMAIL}
 	acme_dns porkbun {
 		api_key {file./run/secrets/porkbun_api_key}
 		api_secret_key {file./run/secrets/porkbun_api_secret_key}
 	}
+	debug
 	storage file_system {
 		root /caddy/data
 	}
-	log caddy {
-		output file /caddy/data/logs/caddy.log {
-			roll_size 10MiB
-			roll_local_time
-			roll_keep 5
-			roll_keep_for 336h
-		}
-		format console {
-			time_local
-			time_format wall
-		}
-		level INFO
-	}
 }
-
-import /caddy/conf.d/*.caddy

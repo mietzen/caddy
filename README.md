@@ -16,19 +16,19 @@ My customized Caddy Docker image with additional plugins for Docker service disc
 ## Perquisite: Obtaining a OPNsense API keys
 
 1. Create a new API-User under **System** -> **Access** -> **Users**
-	- Set `Scrambled Password` to `True` and make sure `Login shell` is `None`
+    - Set `Scrambled Password` to `True` and make sure `Login shell` is `None`
 
-  	  <img width="600" alt="OPNsense user create dialog" src="https://github.com/user-attachments/assets/7d574600-5f8b-401e-89a8-3fa5c67e18b5" />
+        <img width="600" alt="OPNsense user create dialog" src="https://github.com/user-attachments/assets/7d574600-5f8b-401e-89a8-3fa5c67e18b5" />
 
-  	- Set the Permissions for Dnsmasq to: `Services: Dnsmasq DNS/DHCP: Settings`
+      - Set the Permissions for Dnsmasq to: `Services: Dnsmasq DNS/DHCP: Settings`
 
-   	  <img width="500" alt="OPNsense user permissions setting for Dnsmasq" src="https://github.com/user-attachments/assets/902d0c5e-d6fa-4254-ad56-2bc4e76b3582" />
+         <img width="500" alt="OPNsense user permissions setting for Dnsmasq" src="https://github.com/user-attachments/assets/902d0c5e-d6fa-4254-ad56-2bc4e76b3582" />
 
-  	- Set the Permissions for Unbound to: `Services: Unbound (MVC)` & `Services: Unbound DNS: Edit Host and Domain Override`
+      - Set the Permissions for Unbound to: `Services: Unbound (MVC)` & `Services: Unbound DNS: Edit Host and Domain Override`
 
       <img width="500" alt="OPNsense user permissions setting for Unbound" src="https://github.com/user-attachments/assets/a24c95e2-c857-4edb-9c21-d54417ed7799"/>
 
-	- Click `Save`
+    - Click `Save`
 
 2. Click the API-Key Symbol (Postage Stamp?) to create a API Key and click yes.
 
@@ -75,11 +75,14 @@ services:
       - "443:443"
     volumes:
       - caddy_data:/caddy/data
-      # - ./Caddyfile:/etc/caddy/Caddyfile # Optional if you need custom server settings
+      # - ./Caddyfile:/caddy/Caddyfile # Optional if you need custom server settings
       # - ./conf.d/:/caddy/conf.d/ # Optional if you want to add server configs
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       ACME_EMAIL: 'contact@example.com'
       BASE_DOMAIN: 'example.com'
+      CADDY_INGRESS_NETWORKS: caddy-ingress
+      CADDY_SERVER_IP: '192.168.42.1'
       DOCKER_HOST_IP: '192.168.42.23'
       OPNSENSE_DNS_SERVICE: 'dnsmasq' # or 'unbound'
       OPNSENSE_HOSTNAME: 'opnsense' # you can add a port like 'opnsense:8443' or use a IP '192.168.42.1:8443' but it must be a https backend!
@@ -117,25 +120,22 @@ Now you can create another docker compose stacks with a service you want to expo
 
 ```yaml
 services:
-  whoami1:
+  whoami2:
     image: traefik/whoami
     networks:
       - ingress
-    deploy:
-      labels:
-        caddy: whoami1.example.com
-        caddy.reverse_proxy: "{{upstreams 80}}"
-        # remove the following line when you have verified your setup
-        # Otherwise you risk being rate limited by let's encrypt
-        caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory
+    labels:
+      caddy: whoami.example.com
+      caddy.reverse_proxy: "{{upstreams 80}}"
 
 networks:
   ingress:
     name: caddy-ingress
     external: true
+
 ```
 
-and start it with `docker compose up` if it works delete `caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory` and start again with `docker compose up -d`.
+and start it with `docker compose up`.
 
 You will get a letsencrypt TLS cert and a OPNsense host override entry, so when you visit [whoami1.example.com](https://whoami1.example.com) you will be directed to `192.168.42.23`.
 
@@ -145,45 +145,36 @@ If you need some advanced options here are some hints
 
 ### Change default `caddy` configuration
 
-The default `Caddyfile` sits in `/etc/caddy/Caddyfile` and contains:
+The default `Caddyfile` sits in `/caddy/Caddyfile` and contains:
 
 ```caddy
 {
-	dynamic_dns {
-		provider opnsense {
-			host {env.OPNSENSE_HOSTNAME}
-			api_key {file./run/secrets/opnsense_api_key}
-			api_secret_key {file./run/secrets/opnsense_api_secret_key}
-			dns_service {env.OPNSENSE_DNS_SERVICE}
-			insecure {env.OPNSENSE_INSECURE}
-		}
-		domains {env.BASE_DOMAIN}
-		dynamic_domains
-		ip_source static {env.DOCKER_HOST_IP}
-		check_interval 5m
-		ttl 1h
-	}
-	email {env.ACME_EMAIL}
-	acme_dns porkbun {
-		api_key {file./run/secrets/porkbun_api_key}
-		api_secret_key {file./run/secrets/porkbun_api_secret_key}
-	}
-	storage file_system {
-		root /caddy/data
-	}
-	log caddy {
-		output file /caddy/data/logs/caddy.log {
-			roll_size 10MiB
-			roll_local_time
-			roll_keep 5
-			roll_keep_for 336h
-		}
-		format console {
-			time_local
-			time_format wall
-		}
-		level INFO
-	}
+    dynamic_dns {
+        provider opnsense {
+            host {$OPNSENSE_HOSTNAME}
+            api_key {file./run/secrets/opnsense_api_key}
+            api_secret_key {file./run/secrets/opnsense_api_secret_key}
+            dns_service {$OPNSENSE_DNS_SERVICE}
+            insecure {$OPNSENSE_INSECURE}
+        }
+        domains {
+            {$BASE_DOMAIN}
+        }
+        dynamic_domains
+        ip_source static {$DOCKER_HOST_IP}
+        check_interval 120m
+        ttl 1h
+        versions ipv4
+    }
+    email {$ACME_EMAIL}
+    acme_dns porkbun {
+        api_key {file./run/secrets/porkbun_api_key}
+        api_secret_key {file./run/secrets/porkbun_api_secret_key}
+    }
+    debug
+    storage file_system {
+        root /caddy/data
+    }
 }
 
 import /caddy/conf.d/*.caddy
@@ -193,12 +184,12 @@ You can overwrite it using:
 
 ```yaml
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/caddy/Caddyfile
 ```
 
 ### Change default `docker-proxy` configuration
 
-The docker file entrypoint is `["caddy", "docker-proxy"]`
+The docker file entrypoint is `["caddy", "docker-proxy", "--caddyfile-path", "/caddy/Caddyfile"]`
 
 We can use the `command` attribute to add advanced customizations to `docker-proxy`:
 
@@ -239,7 +230,7 @@ Flags:
       --scan-stopped-containers            Scan stopped containers and use its labels for caddyfile generation
 ```
 
-Checkout [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy) for more information.
+Or you can use the [environment variables](https://github.com/lucaslorentz/caddy-docker-proxy?tab=readme-ov-file#caddy-cli), checkout [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy) for more information.
 
 ## Customizing & Forking
 
