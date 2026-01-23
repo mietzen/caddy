@@ -1,4 +1,4 @@
-# Custom Caddy Docker Image
+# Caddy Docker Image
 
 My customized Caddy Docker image with additional plugins for Docker service discovery, OPNsense local DNS management and Porkbun ACME integration.
 
@@ -13,11 +13,26 @@ My customized Caddy Docker image with additional plugins for Docker service disc
 - [**libdns-opnsense-dnsmasq**](https://github.com/mietzen/libdns-opnsense-dnsmasq) - Dnsmasq DNS override provider
 - [**libdns-opnsense-unbound**](https://github.com/mietzen/libdns-opnsense-unbound) - Unbound DNS override provider
 
+## Perquisite: Obtaining a OPNsense API keys
+
+1. Create a new API-User under **System** -> **Access** -> **Users**
+	- Set `Scrambled Password` to `True` and make sure `Login shell` is `None`
+
+  	  <img width="600" alt="OPNsense user create dialog" src="https://github.com/user-attachments/assets/7d574600-5f8b-401e-89a8-3fa5c67e18b5" />
+
+  	- Set the Permissions for Dnsmasq to: `Services: Dnsmasq DNS/DHCP: Settings`
+
+   	  <img width="600" alt="OPNsense user permissions setting for Dnsmasq" src="https://github.com/user-attachments/assets/902d0c5e-d6fa-4254-ad56-2bc4e76b3582" />
+
+  	- Set the Permissions for Unbound to: `Services: Unbound (MVC)` & `Services: Unbound DNS: Edit Host and Domain Override`
+
+      <img width="600" alt="OPNsense user permissions setting for Unbound" src="https://github.com/user-attachments/assets/a24c95e2-c857-4edb-9c21-d54417ed7799"/>
+
+	- Click `Save`
+2. Click the API-Key Symbol (Postage Stamp?) to create a API Key and click yes.
 ## Example
 
-First we need to setup a OPNsense API User, look at the [docs of caddy-dns-opnsense](https://github.com/mietzen/caddy-dns-opnsense?tab=readme-ov-file#setting-up-opnsense-api-keys) on how to do that.
-
-Now we create a docker compose file like this:
+Now we can create a docker compose file like this:
 
 ```yaml
 services:
@@ -82,10 +97,9 @@ services:
         caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory
 ```
 
-and start it with `docker compose up -d`.
+and start it with `docker compose up` if it works delete `caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory` and start again with `docker compose up -d`.
 
 You will get a letsencrypt TLS cert and a OPNsense host override entry, so when you visit [whoami1.example.com](https://whoami1.example.com) you will be directed to `192.168.42.23`.
-
 
 ## Advanced Options
 
@@ -188,3 +202,30 @@ Flags:
 ```
 
 Checkout [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy) for more information.
+
+## Customizing & Forking
+
+If you need a other DNS provider or additional modules you can fork this repo. The included GitHub workflows are generic and should work once you configure the following repository secrets:
+
+```yml
+APP_ID
+APP_PRIVATE_KEY
+DOCKER_HUB_DEPLOY_KEY
+```
+
+and var:
+
+```yml
+DOCKER_HUB_USERNAME
+```
+
+For the actions/create-github-app-token@v2 action you will need to create a GitHub App, see the [usage guide](https://github.com/actions/create-github-app-token?tab=readme-ov-file#usage) on how to do this.
+
+The App will need these permissions:
+
+```yml
+Contents: Read/Write
+Pull requests: Read/Write
+```
+
+Don't forget to activate the workflows after forking!
