@@ -267,3 +267,5 @@ Pull requests: Read/Write
 ```
 
 Don't forget to activate the workflows after forking!
+
+If you add / delete modules in the `xcaddy` build and want dependabot to work, you need to add / delete them in `.github/dependabot-hack/go.mod` as well.
