@@ -53,7 +53,7 @@ services:
       OPNSENSE_HOSTNAME: 'opnsense' # you can add a port like 'opnsense:8443' or use a IP '192.168.42.1:8443' but it must be a https backend!
       OPNSENSE_INSECURE: 'true' # If your OPNsense instance uses a self signed cert
     networks:
-      - caddy
+      - ingress
     secrets:
       - opnsense_api_key
       - opnsense_api_secret_key
@@ -74,7 +74,8 @@ volumes:
   caddy_data:
 
 networks:
-  caddy:
+  ingress:
+    name: caddy-ingress
     driver: bridge
 ```
 
@@ -87,7 +88,7 @@ services:
   whoami1:
     image: traefik/whoami
     networks:
-      - caddy
+      - ingress
     deploy:
       labels:
         caddy: whoami1.example.com
@@ -95,6 +96,11 @@ services:
         # remove the following line when you have verified your setup
         # Otherwise you risk being rate limited by let's encrypt
         caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory
+
+networks:
+  ingress:
+    name: caddy-ingress
+    external: true
 ```
 
 and start it with `docker compose up` if it works delete `caddy.tls.ca: https://acme-staging-v02.api.letsencrypt.org/directory` and start again with `docker compose up -d`.
