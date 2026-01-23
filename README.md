@@ -47,7 +47,9 @@ chmod 600 ./secrets/*
 # chown -R root:root ./secrets
 ```
 
-and add you api key / secrets. After testing you might want to set `root` as owner and run all `docker` commands with `sudo`. Or use:
+and add you api key / secrets. After testing you might want to set `root` as owner and run all `docker` commands with `sudo`.
+
+Or even better use:
 
 ```yaml
 secrets:
@@ -56,7 +58,7 @@ secrets:
   ...
 ```
 
-To inject the secrets from the environment and delete the secrets folder with `rm -rf ./secrets`.
+to inject the secrets from the environment and delete the secrets folder with `rm -rf ./secrets`.
 
 Now we can create a docker compose file like this:
 
