@@ -20,7 +20,7 @@ jobs:
     - name: Setup Matrix-Jobs
       id: set-matrix
       run: |
-        echo "build_matrix=$(cat .github/platforms.json)" >> $GITHUB_OUTPUT
+        echo "build_matrix=$(jq -c . .github/platforms.json)" >> $GITHUB_OUTPUT
         if [[ "${{ github.event_name }}" == "release" ]]; then
           echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         else
