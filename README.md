@@ -2,7 +2,7 @@
 
 My customized Caddy Docker image with additional plugins for Docker service discovery, OPNsense local DNS management and Porkbun ACME integration.
 
-![Demo of the Plugin](demo60fps.gif)
+![Demo of the Plugin](demo.gif)
 
 ## Caddy Plugins
 
