@@ -143,6 +143,12 @@ You will get a letsencrypt TLS cert and a OPNsense host override entry, so when 
 
 If you need some advanced options here are some hints
 
+### Change OPNsense DNS entry description
+
+The default description is *Managed by Caddy*, if you run multiple instances you might want to change this to e.g.: *Managed by Caddy on Machine 1*
+
+You can do so by setting the `OPNSENSE_ENTRY_DESCRIPTION` environment variable.
+
 ### Change default `caddy` configuration
 
 The default `Caddyfile` sits in `/caddy/Caddyfile` and contains:
@@ -156,6 +162,7 @@ The default `Caddyfile` sits in `/caddy/Caddyfile` and contains:
             api_secret_key {file./run/secrets/opnsense_api_secret_key}
             dns_service {$OPNSENSE_DNS_SERVICE}
             insecure {$OPNSENSE_INSECURE}
+			      entry_description {$OPNSENSE_ENTRY_DESCRIPTION}
         }
         domains {
             {$BASE_DOMAIN}
