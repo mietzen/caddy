@@ -56,7 +56,7 @@ jobs:
       env:
         DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
         BUILD_NR: ${{ github.run_number }}
-        PLATFORM: ${{ matrix.platforms }}
+        PLATFORM: ${{ matrix.platform }}
       run: |
         ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
         echo ""
@@ -82,7 +82,7 @@ jobs:
       env:
         DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
         BUILD_NR: ${{ github.run_number }}
-        PLATFORM: ${{ matrix.platforms }}
+        PLATFORM: ${{ matrix.platform }}
       run: |
         ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
         echo ""
