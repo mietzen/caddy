@@ -22,11 +22,11 @@ jobs:
           HAS_GO_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'go') }}
         run: |
           if [[ "$HAS_DOCKER_LABEL" == 'true' ]]; then
-            echo "version=$(grep FROM ./Dockerfile | tail -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs).0" >> $GITHUB_OUTPUT
+            echo "version=$(grep FROM ./Dockerfile | tail -n1 | cut -d':' -f2 | cut -d' ' -f1 | xargs)-0" >> $GITHUB_OUTPUT
           elif [[ "$HAS_GO_LABEL" == 'true' ]]; then
             LATEST_TAG=$(curl -s "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r '.name')
             # Increment the patch version (last number after the last dot)
-            NEW_VERSION=$(echo "$LATEST_TAG" | awk -F. -v OFS=. '{$NF++; print}')
+            NEW_VERSION=$(echo "$LATEST_TAG" | awk -F- -v OFS=- '{$NF++; print}')
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           else
             echo "Unknown trigger: no docker or go label found"
