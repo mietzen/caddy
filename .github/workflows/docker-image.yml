@@ -7,7 +7,7 @@ on:
 
 jobs:
   Setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       build_matrix: ${{ steps.set-matrix.outputs.build_matrix }}
       version: ${{ steps.set-matrix.outputs.version }}
@@ -20,7 +20,7 @@ jobs:
     - name: Setup Matrix-Jobs
       id: set-matrix
       run: |
-        echo "build_matrix=$(cat .github/platforms.json)" >> $GITHUB_OUTPUT
+        echo "build_matrix=$(jq -c . .github/platforms.json)" >> $GITHUB_OUTPUT
         if [[ "${{ github.event_name }}" == "release" ]]; then
           echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         else
@@ -29,16 +29,20 @@ jobs:
         echo "repo_name_lower_case=$(echo ${GITHUB_REPOSITORY@L} | cut -d'/' -f2)" >> $GITHUB_OUTPUT
 
   Build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     needs: Setup
     env:
       VERSION: ${{ needs.Setup.outputs.version }}
       IMAGE_NAME: ${{ vars.IMAGE_NAME || needs.Setup.outputs.repo_name_lower_case }}
     strategy:
       fail-fast: false
-      matrix:
-        ${{ insert }}: ${{ fromJson(needs.Setup.outputs.build_matrix) }}
+      matrix: ${{ fromJson(needs.Setup.outputs.build_matrix) }}
     steps:
+    - name: Show platform info
+      run: |
+        echo "Platform: ${{ matrix.platform }}"
+        echo "Runner:   ${{ matrix.runner }}"
+
     - name: Checkout
       uses: actions/checkout@v6
 
@@ -52,7 +56,7 @@ jobs:
       env:
         DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
         BUILD_NR: ${{ github.run_number }}
-        PLATFORM: ${{ matrix.platforms }}
+        PLATFORM: ${{ matrix.platform }}
       run: |
         ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
         echo ""
@@ -78,7 +82,7 @@ jobs:
       env:
         DOCKER_USER: ${{ vars.DOCKER_HUB_USERNAME || github.repository_owner }}
         BUILD_NR: ${{ github.run_number }}
-        PLATFORM: ${{ matrix.platforms }}
+        PLATFORM: ${{ matrix.platform }}
       run: |
         ARCH=$(echo "${PLATFORM}" | awk -F  "/" '{print $2$3}')
         echo ""
@@ -92,7 +96,7 @@ jobs:
 
   Shared-Manifest:
     if: github.event_name == 'release'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - Build
       - Setup
@@ -140,7 +144,7 @@ jobs:
 
   Check-Build:
     if: ${{ always() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - Build
       - Shared-Manifest
