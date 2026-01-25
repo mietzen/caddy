@@ -82,7 +82,6 @@ services:
       ACME_EMAIL: 'contact@example.com'
       BASE_DOMAIN: 'example.com'
       CADDY_INGRESS_NETWORKS: caddy-ingress
-      CADDY_SERVER_IP: '192.168.42.1'
       DOCKER_HOST_IP: '192.168.42.23'
       OPNSENSE_DNS_SERVICE: 'dnsmasq' # or 'unbound'
       OPNSENSE_HOSTNAME: 'opnsense' # you can add a port like 'opnsense:8443' or use a IP '192.168.42.1:8443' but it must be a https backend!
