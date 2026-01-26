@@ -29,3 +29,5 @@
 		format console
 	}
 }
+
+import /caddy/conf.d/*.caddy
