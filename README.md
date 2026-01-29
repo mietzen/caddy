@@ -161,7 +161,7 @@ The default `Caddyfile` sits in `/caddy/Caddyfile` and contains:
             api_secret_key {file./run/secrets/opnsense_api_secret_key}
             dns_service {$OPNSENSE_DNS_SERVICE}
             insecure {$OPNSENSE_INSECURE}
-			      entry_description {$OPNSENSE_ENTRY_DESCRIPTION}
+			entry_description {$OPNSENSE_ENTRY_DESCRIPTION}
         }
         domains {
             {$BASE_DOMAIN}
