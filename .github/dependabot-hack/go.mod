@@ -6,7 +6,7 @@ require (
 	github.com/caddy-dns/porkbun v0.3.1
 	github.com/caddyserver/caddy/v2 v2.11.2
 	github.com/libdns/libdns v1.1.1
-	github.com/lucaslorentz/caddy-docker-proxy/v2 v2.10.0
+	github.com/lucaslorentz/caddy-docker-proxy/v2 v2.11.0
 	github.com/mietzen/caddy-dns-opnsense v0.4.0
 	github.com/mietzen/libdns-opnsense-dnsmasq v0.1.0
 	github.com/mietzen/libdns-opnsense-unbound v0.1.0
@@ -51,7 +51,7 @@ require (
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
-	github.com/docker/docker v28.2.2+incompatible // indirect
+	github.com/docker/docker v28.5.2+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -63,7 +63,6 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/cel-go v0.27.0 // indirect
