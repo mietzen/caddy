@@ -32,7 +32,7 @@ jobs:
             echo "Unknown trigger: no docker or go label found"
             exit 1
           fi
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: generate-token
         with:
           app-id: ${{ secrets.APP_ID }}
