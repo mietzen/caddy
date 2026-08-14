@@ -8,7 +8,7 @@ RUN xcaddy build \
     --with github.com/mietzen/libdns-opnsense-dnsmasq \
     --with github.com/mietzen/libdns-opnsense-unbound
 
-FROM caddy:2.10.2
+FROM caddy:2.11.4
 
 RUN mkdir /caddy
 COPY ./Caddyfile /caddy/Caddyfile
